@@ -8,5 +8,3 @@ connectDb();
 
 app.listen(3002, () => console.log("server is running on 3001"));
 
-console.log("nima gap");
-
