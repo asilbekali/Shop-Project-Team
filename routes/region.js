@@ -1,4 +1,4 @@
-const Region = require("../models/region");
+const { Region } = require("../associations");
 const { Router } = require("express");
 const { regionVali } = require("../validators/region.validation");
 
