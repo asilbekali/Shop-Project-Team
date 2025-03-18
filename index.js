@@ -9,7 +9,3 @@ connectDb();
 app.listen(3002, () => console.log("server is running on 3001"));
 
 
-<<<<<<< HEAD
-=======
-console.log("ishladi kod");
->>>>>>> asilbek
