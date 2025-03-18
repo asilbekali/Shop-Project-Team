@@ -8,6 +8,7 @@ const userValidator = Joi.object({
   year: Joi.number().required(),
   region_id: Joi.number().required(),
   image: Joi.string(),
+  role: Joi.string().required(),
 });
 
 module.exports = userValidator;
