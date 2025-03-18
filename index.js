@@ -7,3 +7,4 @@ app.use(regionRoute);
 connectDb();
 
 app.listen(3002, () => console.log("server is running on 3001"));
+
