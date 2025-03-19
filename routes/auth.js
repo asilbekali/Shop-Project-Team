@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const logger = require("../logger");
 const { sendEmail } = require("../config/sendEmail");
 const { sendSMS } = require("../config/eskiz");
+const upload = require("../multer/malter");
 
 const router = require("express").Router();
 
@@ -18,7 +19,6 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-
 function genToken(user) {
     const token = jwt.sign({ id: user.id }, "apex1", { expiresIn: "15m" });
     return token;
@@ -29,11 +29,14 @@ function genRefreshToken(user) {
     return token;
 }
 
-router.post("/register", async (req, res) => {
+router.post("/register", upload.single("file"), async (req, res) => {
     try {
         const { error } = userValidator.validate(req.body);
         if (error)
             return res.status(400).send({ message: error.details[0].message });
+        const file = req.file;
+        logger.info("File received", { file });
+        const imageUrl = `../uploads/${file.filename}`;
 
         const { email, password, phone, ...rest } = req.body;
         const otp = totp.generate(email + "apex");
@@ -43,12 +46,12 @@ router.post("/register", async (req, res) => {
             password: hash,
             status: "pending",
             phone: phone,
+            image: imageUrl,
             ...rest,
         });
         console.log(otp);
         sendEmail(email, otp);
         // sendSMS(phone, otp)                      ///send smm funksiyasini yoqb qoyish kerak
-        
 
         logger.log("info", `New user registered - ${newUser}`);
         res.send({ message: "Otp sended to your email" });

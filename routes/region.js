@@ -1,4 +1,4 @@
-const { Region } = require("../associations");
+const { Region, User } = require("../associations");
 const { Router } = require("express");
 const { regionVali } = require("../validators/region.validation");
 const logger = require("../logger");
@@ -27,7 +27,11 @@ router.post("/region", async (req, res) => {
 
 router.get("/regions", async (req, res) => {
     try {
-        const bazaRegions = await Region.findAll();
+        const bazaRegions = await Region.findAll({
+            include: {
+                model: User
+            }
+        });
         logger.info("region get  method");
         res.send(bazaRegions);
     } catch (error) {

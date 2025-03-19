@@ -7,7 +7,7 @@ const { Region, User } = require("../associations");
 
 router.get("/all", roleMiddleware(["admin"]), async (req, res) => {
   try {
-    const { limit, offset } = req.query;
+    let { limit, offset } = req.query;
     limit = parseInt(limit) || 10;
     offset = (parseInt(offset) - 1) * limit || 0;
     const all = await User.findAll({
