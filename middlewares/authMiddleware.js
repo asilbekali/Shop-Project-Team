@@ -6,6 +6,10 @@ function authMiddleware(req, res, next) {
     if (!token) return res.status(401).send({ message: "Token not provided" });
     const user = jwt.verify(token, "apex1");
     if (!user) return res.status(401).send({ message: "Invalid token" });
+    if (user.status != "active")
+      return res
+        .status(401)
+        .send({ message: "You did not verified please verify your account" });
     req.user = user;
     next();
   } catch (error) {

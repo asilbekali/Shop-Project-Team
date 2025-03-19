@@ -21,14 +21,11 @@ function genRefreshToken(user) {
   return token;
 }
 
-router.post("/register", upload.single("file"), async (req, res) => {
+router.post("/register", async (req, res) => {
   try {
     const { error } = userValidator.validate(req.body);
     if (error)
       return res.status(400).send({ message: error.details[0].message });
-    const file = req.file;
-    logger.info("File received", { file });
-    const imageUrl = `../uploads/${file.filename}`;
 
     const { email, password, phone, ...rest } = req.body;
     const otp = totp.generate(email + "apex");
@@ -38,7 +35,6 @@ router.post("/register", upload.single("file"), async (req, res) => {
       password: hash,
       status: "pending",
       phone: phone,
-      image: imageUrl || "",
       ...rest,
     });
     console.log(otp);
