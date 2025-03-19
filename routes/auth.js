@@ -38,7 +38,7 @@ router.post("/register", upload.single("file"), async (req, res) => {
       password: hash,
       status: "pending",
       phone: phone,
-      image: imageUrl,
+      image: imageUrl || "",
       ...rest,
     });
     console.log(otp);
