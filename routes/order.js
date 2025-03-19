@@ -1,22 +1,19 @@
 const express = require("express");
-const User = require("../models/users");
-const Order = require("../models/order");
+const { User, Order } = require("../associations");
 const router = express.Router();
 
 router.get("/orders", async (req, res) => {
   try {
     const orders = await Order.findAll({
       include: [
-        { model: User, attributes: ["id", "userName", "email", "phone"] }, 
-      ]
-    }
-  );
+        { model: User, attributes: ["id", "userName", "email", "phone"] },
+      ],
+    });
     res.json(orders);
   } catch (error) {
     res.status(500).json({ error: "Error:500 server error" });
-    }
   }
-);
+});
 
 router.post("/order", async (req, res) => {
   try {
@@ -24,9 +21,8 @@ router.post("/order", async (req, res) => {
     res.json(order);
   } catch (error) {
     res.status(400).json({ error: "Data entered uncorrectly" });
-    }
   }
-);
+});
 
 router.put("/order/:id", async (req, res) => {
   try {
@@ -38,8 +34,7 @@ router.put("/order/:id", async (req, res) => {
         include: [
           { model: User, attributes: ["id", "userName", "email", "phone"] },
         ],
-      }
-    );
+      });
 
       res.json(updatedOrder);
     } else {
@@ -47,9 +42,8 @@ router.put("/order/:id", async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: "Error:500 server error" });
-    }
- }
-);
+  }
+});
 
 router.delete("/order/:id", async (req, res) => {
   try {
@@ -63,8 +57,7 @@ router.delete("/order/:id", async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: "Error:500 server error" });
-    }
   }
-);
+});
 
 module.exports = router;
