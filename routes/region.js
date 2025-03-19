@@ -29,10 +29,15 @@ router.post("/region", async (req, res) => {
 
 router.get("/regions", authMiddleware, async (req, res) => {
   try {
+    let { limit, offset } = req.query;
+    limit = parseInt(limit) || 10;
+    offset = (parseInt(offset) - 1) * limit || 0;
     const bazaRegions = await Region.findAll({
       include: {
         model: User,
       },
+      limit,
+      offset,
     });
     logger.info("region get  method");
     res.send(bazaRegions);
