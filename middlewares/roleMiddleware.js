@@ -6,7 +6,9 @@ function roleMiddleware(roles) {
       const token = req.header("Authorization")?.split(" ")[1];
       if (!token)
         return res.status(401).send({ message: "Token not provided" });
+      
       const user = jwt.verify(token, "apex1");
+      console.log(user);
       if (!user) return res.status(401).send({ message: "Invalid token" });
       req.user = user;
       if (roles.includes(user.role)) {
