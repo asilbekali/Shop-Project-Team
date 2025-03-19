@@ -6,6 +6,8 @@ function authMiddleware(req, res, next) {
     if (!token) return res.status(401).send({ message: "Token not provided" });
     const user = jwt.verify(token, "apex1");
     if (!user) return res.status(401).send({ message: "Invalid token" });
+    console.log();
+    
     if (user.status != "active")
       return res
         .status(401)

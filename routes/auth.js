@@ -12,7 +12,7 @@ const upload = require("../multer/malter");
 const router = require("express").Router();
 
 function genToken(user) {
-  const token = jwt.sign({ id: user.id }, "apex1", { expiresIn: "15m" });
+  const token = jwt.sign({ id: user.id, role: user.role, status: user.status}, "apex1", { expiresIn: "15m" });
   return token;
 }
 

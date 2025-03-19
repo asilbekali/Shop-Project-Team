@@ -7,7 +7,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = Router();
 
-router.post("/region", roleMiddleware(["admin"]), async (req, res) => {
+router.post("/region", async (req, res) => {
   const { error, value } = regionVali(req.body);
   if (error) {
     return res.status(500).send({ message: "Error in validation region" });
