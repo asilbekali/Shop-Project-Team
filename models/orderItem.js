@@ -1,31 +1,24 @@
 const { DataTypes } = require("sequelize");
 const { db } = require("../config/db");
 
-const order_id = db.define("order_id", {
+const OrderItem = db.define("OrderItem", {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
-
   order_id: {
     type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
+    allowNull: false,
   },
-
   product_id: {
     type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
+    allowNull: false,
   },
-
   count: {
-    type: DataTypes.BIGINT,
-    autoIncrement: true,
-    primaryKey
-        }
-    }
-);
-  
-module.exports = order_id;
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+});
+
+module.exports = OrderItem;
