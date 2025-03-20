@@ -34,8 +34,17 @@ const upload = multer({ storage: storage });
 
 /**
  * @swagger
+ * tags:
+ *   - name: Upload
+ *     description: "Image upload APIs"
+ */
+
+/**
+ * @swagger
  * /upload:
  *   post:
+ *     tags:
+ *       - Upload
  *     summary: Upload an image
  *     description: Uploads a single image and returns its accessible URL.
  *     requestBody:
@@ -78,6 +87,8 @@ app.use("/uploads", upload.single("rasm"), (req, res) => {
  * @swagger
  * /image/{filename}:
  *   get:
+ *     tags:
+ *       - Upload
  *     summary: Get an uploaded image
  *     description: Serves a previously uploaded image by filename.
  *     parameters:

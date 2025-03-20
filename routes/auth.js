@@ -26,8 +26,17 @@ function genRefreshToken(user) {
 
 /**
  * @swagger
+ * tags:
+ *   - name: Auth
+ *     description: "Authentication APIs"
+ */
+
+/**
+ * @swagger
  * /register:
  *   post:
+ *     tags:
+ *       - Auth
  *     summary: "Yangi foydalanuvchini ro‘yxatdan o‘tkazish"
  *     description: "Email orqali OTP yuboriladi"
  *     requestBody:
@@ -83,6 +92,8 @@ router.post("/register", async (req, res) => {
  * @swagger
  * /verify:
  *   post:
+ *     tags:
+ *       - Auth
  *     summary: "Foydalanuvchini OTP bilan tasdiqlash"
  *     requestBody:
  *       required: true
@@ -128,6 +139,8 @@ router.post("/verify", async (req, res) => {
  * @swagger
  * /resend-otp:
  *   post:
+ *     tags:
+ *       - Auth
  *     summary: "Yangi OTP kodini qayta yuborish"
  *     requestBody:
  *       required: true
@@ -169,6 +182,8 @@ router.post("/resend-otp", async (req, res) => {
  * @swagger
  * /login:
  *   post:
+ *     tags:
+ *       - Auth
  *     summary: "Foydalanuvchini tizimga kirish"
  *     requestBody:
  *       required: true
@@ -218,6 +233,8 @@ router.post("/login", async (req, res) => {
  * @swagger
  * /access-token:
  *   post:
+ *     tags:
+ *       - Auth
  *     summary: "Yangi access token olish"
  *     requestBody:
  *       required: true
