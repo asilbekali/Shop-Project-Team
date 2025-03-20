@@ -30,7 +30,7 @@ router.get("/my-orders", authMiddleware, async (req, res) => {
           include: [
             {
               model: Product,
-              attributes: ["id", "name", "price", "image"],
+              attributes: ["id", "name", "price", "img"],
             },
           ],
         },
