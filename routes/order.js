@@ -1,62 +1,64 @@
-const express = require("express");
-const { User, Order } = require("../associations");
-const router = express.Router();
+const router = require("express").Router();
+const authMiddleware = require("../middlewares/authMiddleware");
+const roleMiddleware = require("../middlewares/roleMiddleware");
+const Order = require("../models/order");
+const logger = require("../logger");
+const orderValidator = require("../validators/order.validator");
 
-router.get("/orders", async (req, res) => {
+router.get("/my-orders", authMiddleware, async (req, res) => {
   try {
-    const orders = await Order.findAll({
-      include: [
-        { model: User, attributes: ["id", "userName", "email", "phone"] },
-      ],
-    });
-    res.json(orders);
+    const myorder = await Order.findAll({ where: { user_id: req.user.id } });
+    if (!myorder) return res.send({ message: "You don't have any order yet" });
+    logger.log("info", "User used get method for my-orders");
+    res.send(myorder);
   } catch (error) {
-    res.status(500).json({ error: "Error:500 server error" });
+    console.log(error);
+    res.status(500).send({ message: "Error to get my orders" });
   }
 });
 
-router.post("/order", async (req, res) => {
+router.post("/order", authMiddleware, async (req, res) => {
   try {
-    const order = await Order.create(req.body);
-    res.json(order);
+    const { error } = orderValidator.validate(req.body);
+    if (error)
+      return res.status(400).send({ message: error.details[0].message });
+    const newOrder = await Order.create(req.body);
+    logger.log("info", "User created new order");
+    res.send(newOrder);
   } catch (error) {
-    res.status(400).json({ error: "Data entered uncorrectly" });
+    console.log(error);
+    res.status(500).send({ message: "Error to post order" });
   }
 });
 
-router.put("/order/:id", async (req, res) => {
+router.patch("/order/:id", roleMiddleware(["admin"]), async (req, res) => {
   try {
-    const { id } = req.params;
-    const [updated] = await Order.update(req.body, { where: { id } });
-
-    if (updated) {
-      const updatedOrder = await Order.findByPk(id, {
-        include: [
-          { model: User, attributes: ["id", "userName", "email", "phone"] },
-        ],
-      });
-
-      res.json(updatedOrder);
-    } else {
-      res.status(404).json({ error: "Order not found" });
-    }
+    const { error } = orderValidator.validate(req.body);
+    if (error)
+      return res.status(400).send({ message: error.details[0].message });
+    const one = await Order.findByPk(req.params.id);
+    if (!one) return res.status(404).send({ message: "Order not found" });
+    await one.update(req.body);
+    logger.log("info", "Admin patched order");
+    res.send(one);
   } catch (error) {
-    res.status(500).json({ error: "Error:500 server error" });
+    console.log(error);
+    res.status(500).send({ message: "Error to patch order" });
   }
 });
 
-router.delete("/order/:id", async (req, res) => {
+router.delete("/order/:id", authMiddleware, async (req, res) => {
   try {
-    const { id } = req.params;
-    const deleted = await Order.destroy({ where: { id } });
-
-    if (deleted) {
-      res.json({ message: "Buyurtma o‘chirildi" });
-    } else {
-      res.status(404).json({ error: "Order not found" });
-    }
+    const one = await Order.findByPk(req.params.id);
+    if (!one) return res.status(404).send({ message: "Order not found" });
+    if (one.user_id != req.user.id)
+      return res.status(400).send({ message: "You don't have access" });
+    await one.destroy();
+    logger.log("info", "Order deleted");
+    res.send(one);
   } catch (error) {
-    res.status(500).json({ error: "Error:500 server error" });
+    console.log(error);
+    res.status(500).send({ message: "Error to delete order" });
   }
 });
 

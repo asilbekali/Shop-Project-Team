@@ -7,7 +7,6 @@ const jwt = require("jsonwebtoken");
 const logger = require("../logger");
 const { sendEmail } = require("../config/sendEmail");
 const { sendSMS } = require("../config/eskiz");
-const upload = require("../multer/malter");
 
 const router = require("express").Router();
 
