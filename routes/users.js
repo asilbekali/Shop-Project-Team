@@ -9,26 +9,28 @@ const { Region, User } = require("../associations");
  * @swagger
  * /users/all:
  *   get:
- *     summary: Get all users (Admin only)
- *     tags: [Users]
+ *     summary: Get all users
+ *     description: Retrieve a paginated list of all users. Only accessible by admins.
+ *     tags:
+ *       - Users
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *         description: Number of users per page
+ *         description: Number of results per page (default is 10)
  *       - in: query
  *         name: offset
  *         schema:
  *           type: integer
- *         description: Page number
+ *         description: Page offset
  *     responses:
  *       200:
- *         description: Returns a list of users
+ *         description: List of users
  *       500:
- *         description: Internal server error
+ *         description: Server error
  */
 router.get("/all", roleMiddleware(["admin"]), async (req, res) => {
   try {
@@ -55,10 +57,12 @@ router.get("/all", roleMiddleware(["admin"]), async (req, res) => {
  * @swagger
  * /users/byregion/{id}:
  *   get:
- *     summary: Get users by region (Admin only)
- *     tags: [Users]
+ *     summary: Get users by region
+ *     description: Retrieve users filtered by region ID. Only accessible by admins.
+ *     tags:
+ *       - Users
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -66,13 +70,23 @@ router.get("/all", roleMiddleware(["admin"]), async (req, res) => {
  *         schema:
  *           type: integer
  *         description: Region ID
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of results per page (default is 10)
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *         description: Page offset
  *     responses:
  *       200:
- *         description: Returns a list of users by region
+ *         description: List of users in the region
  *       404:
- *         description: No users found
+ *         description: Users not found
  *       500:
- *         description: Internal server error
+ *         description: Server error
  */
 router.get("/byregion/:id", roleMiddleware(["admin"]), async (req, res) => {
   try {
@@ -104,36 +118,38 @@ router.get("/byregion/:id", roleMiddleware(["admin"]), async (req, res) => {
  * @swagger
  * /users:
  *   post:
- *     summary: Create a new user (Admin only)
- *     tags: [Users]
+ *     summary: Create a new user
+ *     description: Adds a new user to the database. Only admins can perform this action.
+ *     tags:
+ *       - Users
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - username
- *               - password
- *               - email
  *             properties:
  *               username:
  *                 type: string
+ *                 example: "johndoe"
  *               password:
  *                 type: string
+ *                 example: "password123"
  *               email:
  *                 type: string
+ *                 example: "john@example.com"
  *               region_id:
  *                 type: integer
+ *                 example: 1
  *     responses:
  *       201:
- *         description: User created successfully
+ *         description: Successfully created a new user
  *       400:
  *         description: Validation error
  *       500:
- *         description: Internal server error
+ *         description: Server error
  */
 router.post("/", roleMiddleware(["admin"]), async (req, res) => {
   try {
@@ -163,10 +179,12 @@ router.post("/", roleMiddleware(["admin"]), async (req, res) => {
  * @swagger
  * /users/{id}:
  *   patch:
- *     summary: Update a user (Admin only)
- *     tags: [Users]
+ *     summary: Update a user by ID
+ *     description: Updates an existing user by ID. Only admins can perform this action.
+ *     tags:
+ *       - Users
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -175,7 +193,6 @@ router.post("/", roleMiddleware(["admin"]), async (req, res) => {
  *           type: integer
  *         description: User ID
  *     requestBody:
- *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -183,15 +200,17 @@ router.post("/", roleMiddleware(["admin"]), async (req, res) => {
  *             properties:
  *               username:
  *                 type: string
+ *                 example: "john_updated"
  *               email:
  *                 type: string
+ *                 example: "john.updated@example.com"
  *     responses:
  *       200:
- *         description: User updated successfully
+ *         description: Successfully updated user
  *       404:
  *         description: User not found
  *       500:
- *         description: Internal server error
+ *         description: Server error
  */
 router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
   try {
@@ -214,10 +233,12 @@ router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
  * @swagger
  * /users/{id}:
  *   delete:
- *     summary: Delete a user (Admin only)
- *     tags: [Users]
+ *     summary: Delete a user by ID
+ *     description: Removes a user from the database. Only admins can perform this action.
+ *     tags:
+ *       - Users
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -227,11 +248,11 @@ router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
  *         description: User ID
  *     responses:
  *       200:
- *         description: User deleted successfully
+ *         description: Successfully deleted user
  *       404:
  *         description: User not found
  *       500:
- *         description: Internal server error
+ *         description: Server error
  */
 router.delete("/:id", roleMiddleware(["admin"]), async (req, res) => {
   try {

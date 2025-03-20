@@ -7,17 +7,26 @@ const orderValidator = require("../validators/order.validator");
 
 /**
  * @swagger
+ * tags:
+ *   name: Orders
+ *   description: Buyurtmalarni boshqarish
+ */
+
+/**
+ * @swagger
  * /orders/my-orders:
  *   get:
- *     summary: Get the authenticated user's orders
+ *     summary: Foydalanuvchining barcha buyurtmalarini olish
  *     tags: [Orders]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Returns the list of orders
+ *         description: Buyurtmalar ro‘yxati
+ *       404:
+ *         description: Foydalanuvchi buyurtmalari mavjud emas
  *       500:
- *         description: Internal server error
+ *         description: Buyurtmalarni olishda xatolik
  */
 router.get("/my-orders", authMiddleware, async (req, res) => {
   try {
@@ -52,35 +61,32 @@ router.get("/my-orders", authMiddleware, async (req, res) => {
  * @swagger
  * /orders:
  *   post:
- *     summary: Create a new order
+ *     summary: Yangi buyurtma yaratish
  *     tags: [Orders]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - product_id
- *               - count
  *             properties:
  *               product_id:
  *                 type: array
  *                 items:
  *                   type: integer
- *                 description: List of product IDs
+ *                 example: [1, 2, 3]
  *               count:
  *                 type: integer
- *                 description: Quantity of each product
+ *                 example: 2
  *     responses:
  *       201:
- *         description: Order created successfully
+ *         description: Buyurtma muvaffaqiyatli yaratildi
  *       400:
- *         description: Validation error
+ *         description: Yaroqsiz ma’lumot
  *       500:
- *         description: Internal server error
+ *         description: Buyurtma yaratishda xatolik
  */
 router.post("/", authMiddleware, async (req, res) => {
   try {
@@ -107,17 +113,17 @@ router.post("/", authMiddleware, async (req, res) => {
  * @swagger
  * /orders/{id}:
  *   patch:
- *     summary: Update an order (Admin only)
+ *     summary: Buyurtmani yangilash (faqat admin)
  *     tags: [Orders]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: Order ID
+ *         description: Yangilanishi kerak bo'lgan buyurtma ID-si
  *     requestBody:
  *       required: true
  *       content:
@@ -127,14 +133,14 @@ router.post("/", authMiddleware, async (req, res) => {
  *             properties:
  *               status:
  *                 type: string
- *                 description: Updated status of the order
+ *                 example: "Delivered"
  *     responses:
  *       200:
- *         description: Order updated successfully
+ *         description: Buyurtma muvaffaqiyatli yangilandi
  *       404:
- *         description: Order not found
+ *         description: Buyurtma topilmadi
  *       500:
- *         description: Internal server error
+ *         description: Buyurtmani yangilashda xatolik
  */
 router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
   try {
@@ -155,26 +161,24 @@ router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
  * @swagger
  * /orders/{id}:
  *   delete:
- *     summary: Delete an order (Admin only)
+ *     summary: Buyurtmani o‘chirish (faqat admin)
  *     tags: [Orders]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: Order ID
+ *         description: O‘chirilishi kerak bo'lgan buyurtma ID-si
  *     responses:
  *       200:
- *         description: Order deleted successfully
+ *         description: Buyurtma muvaffaqiyatli o‘chirildi
  *       404:
- *         description: Order not found
- *       400:
- *         description: Access denied
+ *         description: Buyurtma topilmadi
  *       500:
- *         description: Internal server error
+ *         description: Buyurtmani o‘chirishda xatolik
  */
 router.delete("/:id", roleMiddleware(["admin"]), async (req, res) => {
   try {

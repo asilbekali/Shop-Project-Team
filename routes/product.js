@@ -9,47 +9,45 @@ const router = Router();
 
 /**
  * @swagger
+ * tags:
+ *   name: Products
+ *   description: Mahsulotlarni boshqarish
+ */
+
+/**
+ * @swagger
  * /products:
  *   post:
- *     summary: Create a new product (Admin & Seller only)
+ *     summary: Yangi mahsulot qo‘shish
  *     tags: [Products]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - author_Id
- *               - name
- *               - description
- *               - price
- *               - category_Id
  *             properties:
- *               author_Id:
- *                 type: integer
- *                 description: ID of the product's author
  *               name:
  *                 type: string
- *                 description: Name of the product
- *               description:
- *                 type: string
- *                 description: Product description
+ *                 example: "Osh"
  *               price:
  *                 type: number
- *                 description: Product price
+ *                 example: 50000
+ *               image:
+ *                 type: string
+ *                 example: "https://example.com/image.jpg"
  *               category_Id:
  *                 type: integer
- *                 description: ID of the product's category
+ *                 example: 2
  *     responses:
  *       201:
- *         description: Product created successfully
+ *         description: Mahsulot muvaffaqiyatli yaratildi
  *       400:
- *         description: Validation error
+ *         description: Yaroqsiz ma’lumot
  *       500:
- *         description: Internal server error
+ *         description: Mahsulot yaratishda xatolik
  */
 router.post("/", roleMiddleware(["admin", "seller"]), async (req, res) => {
   try {
@@ -74,24 +72,24 @@ router.post("/", roleMiddleware(["admin", "seller"]), async (req, res) => {
  * @swagger
  * /products/{id}:
  *   delete:
- *     summary: Delete a product (Admin & Seller only)
+ *     summary: Mahsulotni o‘chirish (faqat admin yoki seller)
  *     tags: [Products]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: Product ID
+ *         description: O‘chiriladigan mahsulot ID-si
  *     responses:
  *       200:
- *         description: Product deleted successfully
+ *         description: Mahsulot muvaffaqiyatli o‘chirildi
  *       404:
- *         description: Product not found
+ *         description: Mahsulot topilmadi
  *       500:
- *         description: Internal server error
+ *         description: Mahsulotni o‘chirishda xatolik
  */
 router.delete("/:id", roleMiddleware(["admin", "seller"]), async (req, res) => {
   const { id } = req.params;
@@ -115,28 +113,26 @@ router.delete("/:id", roleMiddleware(["admin", "seller"]), async (req, res) => {
  * @swagger
  * /products/all:
  *   get:
- *     summary: Get all products (Paginated)
+ *     summary: Barcha mahsulotlarni olish
  *     tags: [Products]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *         description: Number of products per page
+ *         description: Nechta mahsulot olish kerakligini belgilaydi
  *       - in: query
  *         name: offset
  *         schema:
  *           type: integer
- *         description: Page number
+ *         description: Nechta mahsulotdan keyin boshlash kerakligi
  *     responses:
  *       200:
- *         description: Returns a list of products
+ *         description: Barcha mahsulotlar
  *       500:
- *         description: Internal server error
+ *         description: Mahsulotlarni olishda xatolik
  */
-router.get("/all", authMiddleware, async (req, res) => {
+router.get("/all", async (req, res) => {
   try {
     let { limit, offset } = req.query;
     limit = parseInt(limit) || 10;
@@ -161,34 +157,32 @@ router.get("/all", authMiddleware, async (req, res) => {
  * @swagger
  * /products/category/{id}:
  *   get:
- *     summary: Get products by category ID
+ *     summary: Kategoriya bo‘yicha mahsulotlarni olish
  *     tags: [Products]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: Category ID
+ *         description: Kategoriya ID-si
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *         description: Number of products per page
+ *         description: Nechta mahsulot olish kerakligini belgilaydi
  *       - in: query
  *         name: offset
  *         schema:
  *           type: integer
- *         description: Page number
+ *         description: Nechta mahsulotdan keyin boshlash kerakligi
  *     responses:
  *       200:
- *         description: Returns a list of products in the category
+ *         description: Kategoriya bo‘yicha mahsulotlar
  *       500:
- *         description: Internal server error
+ *         description: Mahsulotlarni olishda xatolik
  */
-router.get("/category/:id", authMiddleware, async (req, res) => {
+router.get("/category/:id", async (req, res) => {
   try {
     let { limit, offset } = req.query;
     limit = parseInt(limit) || 10;
@@ -214,17 +208,17 @@ router.get("/category/:id", authMiddleware, async (req, res) => {
  * @swagger
  * /products/{id}:
  *   patch:
- *     summary: Update a product (Admin & Seller only)
+ *     summary: Mahsulotni yangilash (faqat admin yoki seller)
  *     tags: [Products]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: Product ID
+ *         description: Yangilanishi kerak bo'lgan mahsulot ID-si
  *     requestBody:
  *       required: true
  *       content:
@@ -232,28 +226,22 @@ router.get("/category/:id", authMiddleware, async (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               author_Id:
- *                 type: integer
- *                 description: ID of the product's author
  *               name:
  *                 type: string
- *                 description: Name of the product
- *               description:
- *                 type: string
- *                 description: Product description
+ *                 example: "Osh"
  *               price:
  *                 type: number
- *                 description: Product price
- *               category_Id:
- *                 type: integer
- *                 description: ID of the product's category
+ *                 example: 55000
+ *               image:
+ *                 type: string
+ *                 example: "https://example.com/new-image.jpg"
  *     responses:
  *       200:
- *         description: Product updated successfully
+ *         description: Mahsulot muvaffaqiyatli yangilandi
  *       404:
- *         description: Product not found
+ *         description: Mahsulot topilmadi
  *       500:
- *         description: Internal server error
+ *         description: Mahsulotni yangilashda xatolik
  */
 router.patch("/:id", roleMiddleware(["admin", "seller"]), async (req, res) => {
   const { id } = req.params;
