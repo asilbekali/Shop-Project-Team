@@ -10,36 +10,12 @@ const router = Router();
  * @swagger
  * tags:
  *   name: Category
- *   description: Kategoriyalarni boshqarish
+ *   description: Kategoriya boshqarish API
  */
 
 /**
  * @swagger
- * components:
- *   securitySchemes:
- *     bearerAuth:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
- *   schemas:
- *     Category:
- *       type: object
- *       required:
- *         - name
- *       properties:
- *         id:
- *           type: integer
- *           description: Kategoriya ID
- *           example: 1
- *         name:
- *           type: string
- *           description: Kategoriya nomi
- *           example: "Fast Food"
- */
-
-/**
- * @swagger
- * /category:
+ * /categories:
  *   post:
  *     summary: Yangi kategoriya yaratish
  *     tags: [Category]
@@ -50,16 +26,20 @@ const router = Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Category'
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "Fast Food"
  *     responses:
  *       201:
  *         description: Kategoriya muvaffaqiyatli yaratildi
  *       409:
- *         description: Bu kategoriya allaqachon mavjud
+ *         description: Ushbu kategoriya allaqachon mavjud
  *       500:
  *         description: Kategoriya yaratishda xatolik yuz berdi
  */
-router.post("/category", roleMiddleware(["admin"]), async (req, res) => {
+router.post("/", roleMiddleware(["admin"]), async (req, res) => {
   const { name } = req.body;
   try {
     const bazaCategory = await Category.findOne({ where: { name } });
@@ -78,30 +58,28 @@ router.post("/category", roleMiddleware(["admin"]), async (req, res) => {
 
 /**
  * @swagger
- * /category/all:
+ * /categories/all:
  *   get:
  *     summary: Barcha kategoriyalarni olish
  *     tags: [Category]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *           example: 10
+ *         description: Nechta element olish kerakligi
  *       - in: query
  *         name: offset
  *         schema:
  *           type: integer
- *           example: 1
+ *         description: Nechta elementdan keyin olish kerakligi
  *     responses:
  *       200:
- *         description: Barcha kategoriyalar ro'yxati
+ *         description: Kategoriyalar ro‘yxati
  *       500:
  *         description: Kategoriyalarni olishda xatolik yuz berdi
  */
-router.get("/all", authMiddleware, async (req, res) => {
+router.get("/all", async (req, res) => {
   try {
     let { limit, offset } = req.query;
     limit = parseInt(limit) || 10;
@@ -118,7 +96,7 @@ router.get("/all", authMiddleware, async (req, res) => {
 
 /**
  * @swagger
- * /category/{id}:
+ * /categories/{id}:
  *   patch:
  *     summary: Kategoriyani yangilash
  *     tags: [Category]
@@ -130,7 +108,7 @@ router.get("/all", authMiddleware, async (req, res) => {
  *         required: true
  *         schema:
  *           type: integer
- *           example: 1
+ *         description: Kategoriyaning ID-si
  *     requestBody:
  *       required: true
  *       content:
@@ -140,14 +118,13 @@ router.get("/all", authMiddleware, async (req, res) => {
  *             properties:
  *               name:
  *                 type: string
- *                 example: "Drinks"
  *     responses:
  *       200:
  *         description: Kategoriya muvaffaqiyatli yangilandi
  *       204:
  *         description: Kategoriya topilmadi
  *       500:
- *         description: Kategoriya yangilashda xatolik yuz berdi
+ *         description: Yangilash jarayonida xatolik yuz berdi
  */
 router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
   const { id } = req.params;
@@ -169,7 +146,7 @@ router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
 
 /**
  * @swagger
- * /category/{id}:
+ * /categories/{id}:
  *   delete:
  *     summary: Kategoriyani o‘chirish
  *     tags: [Category]
@@ -181,14 +158,14 @@ router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
  *         required: true
  *         schema:
  *           type: integer
- *           example: 1
+ *         description: O‘chiriladigan kategoriyaning ID-si
  *     responses:
  *       200:
  *         description: Kategoriya muvaffaqiyatli o‘chirildi
  *       204:
  *         description: Kategoriya topilmadi
  *       500:
- *         description: Kategoriya o‘chirishda xatolik yuz berdi
+ *         description: O‘chirish jarayonida xatolik yuz berdi
  */
 router.delete("/:id", roleMiddleware(["admin"]), async (req, res) => {
   const { id } = req.params;

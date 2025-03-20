@@ -1,7 +1,6 @@
 const userValidator = require("../validators/user.validator");
 const { totp } = require("otplib");
 const bcrypt = require("bcrypt");
-const nodemailer = require("nodemailer");
 const User = require("../models/users");
 const jwt = require("jsonwebtoken");
 const logger = require("../logger");
@@ -26,19 +25,10 @@ function genRefreshToken(user) {
 
 /**
  * @swagger
- * tags:
- *   - name: Auth
- *     description: "Authentication APIs"
- */
-
-/**
- * @swagger
- * /register:
+ * /auth/register:
  *   post:
- *     tags:
- *       - Auth
- *     summary: "Yangi foydalanuvchini ro‘yxatdan o‘tkazish"
- *     description: "Email orqali OTP yuboriladi"
+ *     summary: Foydalanuvchini ro‘yxatdan o‘tkazish
+ *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
@@ -54,11 +44,9 @@ function genRefreshToken(user) {
  *                 type: string
  *     responses:
  *       200:
- *         description: "OTP emailga yuborildi"
+ *         description: Otp emailga yuborildi
  *       400:
- *         description: "Yaroqsiz ma’lumotlar"
- *       500:
- *         description: "Server xatosi"
+ *         description: Xatolik bor
  */
 router.post("/register", async (req, res) => {
   try {
@@ -78,7 +66,7 @@ router.post("/register", async (req, res) => {
     });
     console.log(otp);
     sendEmail(email, otp);
-    // sendSMS(phone, otp)                      ///send smm funksiyasini yoqb qoyish kerak
+    // sendSMS(phone, otp)  /// sendSMS funksiyasini yoqib qo‘yish kerak
 
     logger.log("info", `New user registered - ${newUser}`);
     res.send({ message: "Otp sended to your email" });
@@ -90,11 +78,10 @@ router.post("/register", async (req, res) => {
 
 /**
  * @swagger
- * /verify:
+ * /auth/verify:
  *   post:
- *     tags:
- *       - Auth
- *     summary: "Foydalanuvchini OTP bilan tasdiqlash"
+ *     summary: OTP kod bilan foydalanuvchini tasdiqlash
+ *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
@@ -108,11 +95,9 @@ router.post("/register", async (req, res) => {
  *                 type: string
  *     responses:
  *       200:
- *         description: "Foydalanuvchi tasdiqlandi"
+ *         description: Foydalanuvchi tasdiqlandi
  *       400:
- *         description: "Kod noto‘g‘ri yoki muddati tugagan"
- *       404:
- *         description: "Foydalanuvchi topilmadi"
+ *         description: Noto‘g‘ri yoki eskirgan kod
  */
 router.post("/verify", async (req, res) => {
   try {
@@ -137,54 +122,10 @@ router.post("/verify", async (req, res) => {
 
 /**
  * @swagger
- * /resend-otp:
+ * /auth/login:
  *   post:
- *     tags:
- *       - Auth
- *     summary: "Yangi OTP kodini qayta yuborish"
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *     responses:
- *       200:
- *         description: "Yangi OTP kod emailga yuborildi"
- *       404:
- *         description: "Foydalanuvchi topilmadi"
- */
-router.post("/resend-otp", async (req, res) => {
-  try {
-    const { email } = req.body;
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
-      return res.status(404).send({ message: "User not found" });
-    }
-    if (user.status == "active") {
-      return res
-        .status(200)
-        .send({ message: "Your account is already verified" });
-    }
-    const token = totp.generate(email + "apex");
-    sendEmail(email, token);
-    logger.log("info", `User requested for new otp - ${user.email}`);
-    res.send({ message: "Verification code sended to email" });
-  } catch (error) {
-    console.log(error);
-  }
-});
-
-/**
- * @swagger
- * /login:
- *   post:
- *     tags:
- *       - Auth
- *     summary: "Foydalanuvchini tizimga kirish"
+ *     summary: Foydalanuvchini tizimga kirishi
+ *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
@@ -198,11 +139,11 @@ router.post("/resend-otp", async (req, res) => {
  *                 type: string
  *     responses:
  *       200:
- *         description: "Muvaffaqiyatli kirish"
+ *         description: Kirish muvaffaqiyatli amalga oshirildi
  *       400:
- *         description: "Foydalanuvchi topilmadi"
+ *         description: Foydalanuvchi topilmadi
  *       401:
- *         description: "Parol noto‘g‘ri"
+ *         description: Parol noto‘g‘ri
  */
 router.post("/login", async (req, res) => {
   try {
@@ -231,11 +172,10 @@ router.post("/login", async (req, res) => {
 
 /**
  * @swagger
- * /access-token:
+ * /auth/access-token:
  *   post:
- *     tags:
- *       - Auth
- *     summary: "Yangi access token olish"
+ *     summary: Yangi access token olish (refresh token orqali)
+ *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
@@ -247,9 +187,9 @@ router.post("/login", async (req, res) => {
  *                 type: string
  *     responses:
  *       200:
- *         description: "Yangi access token olindi"
+ *         description: Yangi access token qaytarildi
  *       401:
- *         description: "Yaroqsiz refresh token"
+ *         description: Noto‘g‘ri refresh token
  */
 router.post("/access-token", async (req, res) => {
   try {

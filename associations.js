@@ -72,23 +72,23 @@ Product.belongsTo(Category, {
   onUpdate: "CASCADE",
 });
 
-Order.belongsTo(OrderItem, {
+Order.hasMany(OrderItem, {
   foreignKey: "order_id",
   onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
-OrderItem.hasMany(Order, {
+OrderItem.belongsTo(Order, {
   foreignKey: "order_id",
   onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
 
-OrderItem.hasMany(Product, {
+Product.hasMany(OrderItem, {
   foreignKey: "product_id",
   onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
-Product.belongsTo(OrderItem, {
+OrderItem.belongsTo(Product, {
   foreignKey: "product_id",
   onDelete: "CASCADE",
   onUpdate: "CASCADE",

@@ -12,28 +12,28 @@ const router = Router();
  * /regions:
  *   post:
  *     summary: Create a new region
- *     tags: [Regions]
- *     security:
- *       - BearerAuth: []
+ *     description: Adds a new region to the database. Only unique region names are allowed.
+ *     tags:
+ *       - Regions
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - name
  *             properties:
  *               name:
  *                 type: string
- *                 description: Name of the region
+ *                 example: "Tashkent"
  *     responses:
  *       201:
- *         description: Region created successfully
+ *         description: Successfully created a new region
+ *       400:
+ *         description: Validation error
  *       409:
  *         description: Region must be unique
  *       500:
- *         description: Internal server error
+ *         description: Server error
  */
 router.post("/", async (req, res) => {
   try {
@@ -61,26 +61,26 @@ router.post("/", async (req, res) => {
  * @swagger
  * /regions/all:
  *   get:
- *     summary: Get all regions (Paginated)
- *     tags: [Regions]
- *     security:
- *       - BearerAuth: []
+ *     summary: Get all regions
+ *     description: Retrieves all regions from the database with optional pagination.
+ *     tags:
+ *       - Regions
  *     parameters:
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *         description: Number of regions per page
+ *         description: Number of results per page (default is 10)
  *       - in: query
  *         name: offset
  *         schema:
  *           type: integer
- *         description: Page number
+ *         description: Page offset
  *     responses:
  *       200:
- *         description: Returns a list of regions
+ *         description: Successfully retrieved regions
  *       500:
- *         description: Internal server error
+ *         description: Server error
  */
 router.get("/all", authMiddleware, async (req, res) => {
   try {
@@ -109,10 +109,10 @@ router.get("/all", authMiddleware, async (req, res) => {
  * @swagger
  * /regions/{id}:
  *   patch:
- *     summary: Update a region (Admin only)
- *     tags: [Regions]
- *     security:
- *       - BearerAuth: []
+ *     summary: Update a region by ID
+ *     description: Updates an existing region by ID. Only admins can perform this action.
+ *     tags:
+ *       - Regions
  *     parameters:
  *       - in: path
  *         name: id
@@ -120,23 +120,19 @@ router.get("/all", authMiddleware, async (req, res) => {
  *         schema:
  *           type: integer
  *         description: Region ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 description: New name of the region
+ *       - in: body
+ *         name: name
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: New region name
  *     responses:
  *       200:
- *         description: Region updated successfully
+ *         description: Successfully updated region
  *       404:
  *         description: Region not found
  *       500:
- *         description: Internal server error
+ *         description: Server error
  */
 router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
   const { id } = req.params;
@@ -161,10 +157,10 @@ router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
  * @swagger
  * /regions/{id}:
  *   delete:
- *     summary: Delete a region (Admin only)
- *     tags: [Regions]
- *     security:
- *       - BearerAuth: []
+ *     summary: Delete a region by ID
+ *     description: Removes a region from the database. Only admins can perform this action.
+ *     tags:
+ *       - Regions
  *     parameters:
  *       - in: path
  *         name: id
@@ -174,11 +170,11 @@ router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
  *         description: Region ID
  *     responses:
  *       200:
- *         description: Region deleted successfully
+ *         description: Successfully deleted region
  *       404:
  *         description: Region not found
  *       500:
- *         description: Internal server error
+ *         description: Server error
  */
 router.delete("/:id", roleMiddleware(["admin"]), async (req, res) => {
   const { id } = req.params;
@@ -204,10 +200,10 @@ router.delete("/:id", roleMiddleware(["admin"]), async (req, res) => {
  * @swagger
  * /regions/{id}:
  *   get:
- *     summary: Get a region by ID (Admin only)
- *     tags: [Regions]
- *     security:
- *       - BearerAuth: []
+ *     summary: Get a region by ID
+ *     description: Retrieves a specific region by ID.
+ *     tags:
+ *       - Regions
  *     parameters:
  *       - in: path
  *         name: id
@@ -217,11 +213,11 @@ router.delete("/:id", roleMiddleware(["admin"]), async (req, res) => {
  *         description: Region ID
  *     responses:
  *       200:
- *         description: Returns a region object
+ *         description: Successfully retrieved region
  *       404:
  *         description: Region not found
  *       500:
- *         description: Internal server error
+ *         description: Server error
  */
 router.get("/:id", roleMiddleware(["admin"]), async (req, res) => {
   const { id } = req.params;

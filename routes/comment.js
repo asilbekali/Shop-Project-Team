@@ -6,10 +6,17 @@ const router = require("express").Router();
 
 /**
  * @swagger
- * /comment/product-comments/{id}:
+ * tags:
+ *   name: Comments
+ *   description: Foydalanuvchi sharhlarini boshqarish
+ */
+
+/**
+ * @swagger
+ * /comments/product/{id}:
  *   get:
- *     summary: Mahsulotga tegishli barcha izohlarni olish
- *     tags: [Comment]
+ *     summary: Mahsulot sharhlarini olish
+ *     tags: [Comments]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -18,24 +25,24 @@ const router = require("express").Router();
  *         required: true
  *         schema:
  *           type: integer
- *           example: 1
+ *         description: Mahsulot ID-si
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *           example: 10
+ *         description: Nechta sharh olish kerak
  *       - in: query
  *         name: offset
  *         schema:
  *           type: integer
- *           example: 1
+ *         description: Nechta sharhni o'tkazib yuborish kerak
  *     responses:
  *       200:
- *         description: Mahsulotga tegishli barcha izohlar
+ *         description: Sharhlar ro‘yxati
  *       500:
- *         description: Izohlarni olishda xatolik yuz berdi
+ *         description: Sharhlarni olishda xatolik
  */
-router.get("/product-comments/:id", authMiddleware, async (req, res) => {
+router.get("/product/:id", authMiddleware, async (req, res) => {
   try {
     let { limit, offset } = req.query;
     limit = parseInt(limit) || 10;
@@ -54,10 +61,10 @@ router.get("/product-comments/:id", authMiddleware, async (req, res) => {
 
 /**
  * @swagger
- * /comment:
+ * /comments:
  *   post:
- *     summary: Yangi izoh qoldirish
- *     tags: [Comment]
+ *     summary: Yangi sharh qo‘shish
+ *     tags: [Comments]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -67,24 +74,24 @@ router.get("/product-comments/:id", authMiddleware, async (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               user_id:
- *                 type: integer
- *                 example: 1
  *               product_id:
  *                 type: integer
- *                 example: 5
- *               text:
+ *                 example: 1
+ *               user_id:
+ *                 type: integer
+ *                 example: 2
+ *               content:
  *                 type: string
- *                 example: "Bu mahsulot juda yaxshi!"
+ *                 example: "Juda yaxshi mahsulot!"
  *     responses:
  *       201:
- *         description: Izoh muvaffaqiyatli yaratildi
+ *         description: Sharh muvaffaqiyatli qo‘shildi
  *       400:
- *         description: Validatsiya xatosi
+ *         description: Validation xatosi
  *       500:
- *         description: Izoh qoldirishda xatolik yuz berdi
+ *         description: Sharh qo‘shishda xatolik
  */
-router.post("/comment", authMiddleware, async (req, res) => {
+router.post("/", authMiddleware, async (req, res) => {
   try {
     const { error } = commentValidator.validate(req.body);
     if (error)
@@ -99,10 +106,10 @@ router.post("/comment", authMiddleware, async (req, res) => {
 
 /**
  * @swagger
- * /comment/{id}:
+ * /comments/{id}:
  *   patch:
- *     summary: Izohni yangilash
- *     tags: [Comment]
+ *     summary: Foydalanuvchi sharhini yangilash
+ *     tags: [Comments]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -111,7 +118,7 @@ router.post("/comment", authMiddleware, async (req, res) => {
  *         required: true
  *         schema:
  *           type: integer
- *           example: 3
+ *         description: Sharh ID-si
  *     requestBody:
  *       required: true
  *       content:
@@ -119,20 +126,20 @@ router.post("/comment", authMiddleware, async (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               text:
+ *               content:
  *                 type: string
- *                 example: "Bu mahsulot juda ham yaxshi!"
+ *                 example: "Yangilangan sharh!"
  *     responses:
  *       200:
- *         description: Izoh muvaffaqiyatli yangilandi
+ *         description: Sharh muvaffaqiyatli yangilandi
  *       400:
- *         description: Bu izoh sizga tegishli emas
+ *         description: Sharh foydalanuvchiga tegishli emas
  *       404:
- *         description: Izoh topilmadi
+ *         description: Sharh topilmadi
  *       500:
- *         description: Izohni yangilashda xatolik yuz berdi
+ *         description: Sharh yangilashda xatolik
  */
-router.patch("/comment/:id", authMiddleware, async (req, res) => {
+router.patch("/:id", authMiddleware, async (req, res) => {
   try {
     const one = await Comment.findByPk(req.params.id);
     if (!one) return res.status(404).send({ message: "Not found" });
@@ -151,10 +158,10 @@ router.patch("/comment/:id", authMiddleware, async (req, res) => {
 
 /**
  * @swagger
- * /comment/{id}:
+ * /comments/{id}:
  *   delete:
- *     summary: Izohni o‘chirish
- *     tags: [Comment]
+ *     summary: Foydalanuvchi sharhini o‘chirish
+ *     tags: [Comments]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -163,18 +170,18 @@ router.patch("/comment/:id", authMiddleware, async (req, res) => {
  *         required: true
  *         schema:
  *           type: integer
- *           example: 2
+ *         description: O‘chiriladigan sharhning ID-si
  *     responses:
  *       200:
- *         description: Izoh muvaffaqiyatli o‘chirildi
+ *         description: Sharh muvaffaqiyatli o‘chirildi
  *       400:
- *         description: Bu izoh sizga tegishli emas
+ *         description: Sharh foydalanuvchiga tegishli emas
  *       404:
- *         description: Izoh topilmadi
+ *         description: Sharh topilmadi
  *       500:
- *         description: Izohni o‘chirishda xatolik yuz berdi
+ *         description: Sharh o‘chirishda xatolik
  */
-router.delete("/comment/:id", authMiddleware, async (req, res) => {
+router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     const one = await Comment.findByPk(req.params.id);
     if (!one) return res.status(404).send({ message: "Not found" });
