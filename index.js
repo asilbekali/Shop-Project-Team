@@ -11,11 +11,11 @@ connectDb();
 const app = express();
 app.use(express.json());
 
-app.use(regionRoute);
-app.use(authUserRoute);
-app.use(categoryRoute);
-app.use(productRoute);
-app.use(orderRoute);
+app.use("/regions", regionRoute);
+app.use("/auth", authUserRoute);
+app.use("categories", categoryRoute);
+app.use("/products", productRoute);
+app.use("/order", orderRoute);
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
