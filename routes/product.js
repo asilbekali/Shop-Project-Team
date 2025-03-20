@@ -4,6 +4,7 @@ const roleMiddleware = require("../middlewares/roleMiddleware");
 const logger = require("../logger");
 const { proValid } = require("../validators/product.validation");
 const { Product } = require("../associations");
+const Comment = require("../models/comment")
 
 const router = Router();
 
