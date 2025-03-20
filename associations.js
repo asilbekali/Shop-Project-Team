@@ -4,6 +4,7 @@ const Comment = require("./models/comment");
 const Order = require("./models/order");
 const Product = require("./models/product");
 const Category = require("./models/category");
+const OrderItem = require("./models/orderItem");
 
 User.belongsTo(Region, {
   foreignKey: "region_id",
@@ -71,4 +72,26 @@ Product.belongsTo(Category, {
   onUpdate: "CASCADE",
 });
 
-module.exports = { User, Region, Comment, Order, Product, Category };
+Order.belongsTo(OrderItem, {
+  foreignKey: "order_id",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+OrderItem.hasMany(Order, {
+  foreignKey: "order_id",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+
+OrderItem.hasMany(Product, {
+  foreignKey: "product_id",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+Product.belongsTo(OrderItem, {
+  foreignKey: "product_id",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+
+module.exports = { User, Region, Comment, Order, Product, Category, OrderItem };
