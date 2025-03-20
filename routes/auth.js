@@ -24,6 +24,33 @@ function genRefreshToken(user) {
   return token;
 }
 
+/**
+ * @swagger
+ * /register:
+ *   post:
+ *     summary: "Yangi foydalanuvchini ro‘yxatdan o‘tkazish"
+ *     description: "Email orqali OTP yuboriladi"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: "OTP emailga yuborildi"
+ *       400:
+ *         description: "Yaroqsiz ma’lumotlar"
+ *       500:
+ *         description: "Server xatosi"
+ */
 router.post("/register", async (req, res) => {
   try {
     const { error } = userValidator.validate(req.body);
@@ -52,6 +79,30 @@ router.post("/register", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /verify:
+ *   post:
+ *     summary: "Foydalanuvchini OTP bilan tasdiqlash"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               otp:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: "Foydalanuvchi tasdiqlandi"
+ *       400:
+ *         description: "Kod noto‘g‘ri yoki muddati tugagan"
+ *       404:
+ *         description: "Foydalanuvchi topilmadi"
+ */
 router.post("/verify", async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -73,6 +124,26 @@ router.post("/verify", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /resend-otp:
+ *   post:
+ *     summary: "Yangi OTP kodini qayta yuborish"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: "Yangi OTP kod emailga yuborildi"
+ *       404:
+ *         description: "Foydalanuvchi topilmadi"
+ */
 router.post("/resend-otp", async (req, res) => {
   try {
     const { email } = req.body;
@@ -94,6 +165,30 @@ router.post("/resend-otp", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /login:
+ *   post:
+ *     summary: "Foydalanuvchini tizimga kirish"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: "Muvaffaqiyatli kirish"
+ *       400:
+ *         description: "Foydalanuvchi topilmadi"
+ *       401:
+ *         description: "Parol noto‘g‘ri"
+ */
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -119,6 +214,26 @@ router.post("/login", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /access-token:
+ *   post:
+ *     summary: "Yangi access token olish"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refresh_token:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: "Yangi access token olindi"
+ *       401:
+ *         description: "Yaroqsiz refresh token"
+ */
 router.post("/access-token", async (req, res) => {
   try {
     const { refresh_token } = req.body;
