@@ -1,11 +1,41 @@
 const { Category } = require("../associations");
 const authMiddleware = require("../middlewares/authMiddleware");
 const roleMiddleware = require("../middlewares/roleMiddleware");
-
 const { Router } = require("express");
 const logger = require("../logger");
 
 const router = Router();
+
+/**
+ * @swagger
+ * tags:
+ *   name: Category
+ *   description: Kategoriyalarni boshqarish
+ */
+
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *   schemas:
+ *     Category:
+ *       type: object
+ *       required:
+ *         - name
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: Kategoriya ID
+ *           example: 1
+ *         name:
+ *           type: string
+ *           description: Kategoriya nomi
+ *           example: "Fast Food"
+ */
 
 /**
  * @swagger
@@ -20,11 +50,7 @@ const router = Router();
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 example: "Fast Food"
+ *             $ref: '#/components/schemas/Category'
  *     responses:
  *       201:
  *         description: Kategoriya muvaffaqiyatli yaratildi
@@ -33,14 +59,14 @@ const router = Router();
  *       500:
  *         description: Kategoriya yaratishda xatolik yuz berdi
  */
-router.post("/", roleMiddleware(["admin"]), async (req, res) => {
+router.post("/category", roleMiddleware(["admin"]), async (req, res) => {
   const { name } = req.body;
   try {
-    const bazaCategory = await Category.findOne({ where: { name: name } });
+    const bazaCategory = await Category.findOne({ where: { name } });
     if (bazaCategory) {
       return res.status(409).send({ message: "This category already created" });
     }
-    const newCategory = await Category.create({ name: name });
+    const newCategory = await Category.create({ name });
     logger.info("Category created");
     res.status(201).send(newCategory);
   } catch (error) {
@@ -80,10 +106,7 @@ router.get("/all", authMiddleware, async (req, res) => {
     let { limit, offset } = req.query;
     limit = parseInt(limit) || 10;
     offset = (parseInt(offset) - 1) * limit || 0;
-    const all = await Category.findAll({
-      limit,
-      offset,
-    });
+    const all = await Category.findAll({ limit, offset });
     logger.info("Categories fetched");
     res.send(all);
   } catch (error) {
@@ -148,7 +171,7 @@ router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
  * @swagger
  * /category/{id}:
  *   delete:
- *     summary: Kategoriyani o'chirish
+ *     summary: Kategoriyani o‘chirish
  *     tags: [Category]
  *     security:
  *       - bearerAuth: []
@@ -161,7 +184,7 @@ router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
  *           example: 1
  *     responses:
  *       200:
- *         description: Kategoriya muvaffaqiyatli o'chirildi
+ *         description: Kategoriya muvaffaqiyatli o‘chirildi
  *       204:
  *         description: Kategoriya topilmadi
  *       500:

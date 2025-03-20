@@ -14,8 +14,8 @@ const app = express();
 app.use(express.json());
 
 app.use("/regions", regionRoute);
-app.use("/auth", authUserRoute);
-app.use("/categories", categoryRoute);
+app.use(authUserRoute);
+app.use(categoryRoute);
 app.use("/products", productRoute);
 app.use("/order", orderRoute);
 app.use("/comments", commentRoute);
@@ -26,7 +26,7 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.fieldname);
+    cb(null, uniqueSuffix + "-" + file.originalname);
   },
 });
 
@@ -41,7 +41,7 @@ const upload = multer({ storage: storage });
 
 /**
  * @swagger
- * /upload:
+ * /uploads:
  *   post:
  *     tags:
  *       - Upload
