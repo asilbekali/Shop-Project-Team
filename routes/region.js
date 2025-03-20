@@ -7,7 +7,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = Router();
 
-router.post("/region", async (req, res) => {
+router.post("/", async (req, res) => {
   const { error, value } = regionVali(req.body);
   if (error) {
     return res.status(500).send({ message: "Error in validation region" });
@@ -27,7 +27,7 @@ router.post("/region", async (req, res) => {
   }
 });
 
-router.get("/regions", authMiddleware, async (req, res) => {
+router.get("/all", authMiddleware, async (req, res) => {
   try {
     let { limit, offset } = req.query;
     limit = parseInt(limit) || 10;
@@ -48,7 +48,7 @@ router.get("/regions", authMiddleware, async (req, res) => {
   }
 });
 
-router.patch("/region/:id", roleMiddleware(["admin"]), async (req, res) => {
+router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
   try {
@@ -69,7 +69,7 @@ router.patch("/region/:id", roleMiddleware(["admin"]), async (req, res) => {
   }
 });
 
-router.delete("/region/:id", roleMiddleware(["admin"]), async (req, res) => {
+router.delete("/:id", roleMiddleware(["admin"]), async (req, res) => {
   const { id } = req.params;
   try {
     const region = await Region.findByPk(id);
@@ -88,7 +88,7 @@ router.delete("/region/:id", roleMiddleware(["admin"]), async (req, res) => {
   }
 });
 
-router.get("/region/:id", roleMiddleware(["admin"]), async (req, res) => {
+router.get("/:id", roleMiddleware(["admin"]), async (req, res) => {
   const { id } = req.params;
   try {
     const bazaRegions = await Region.findByPk(id);

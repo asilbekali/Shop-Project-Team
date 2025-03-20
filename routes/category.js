@@ -7,7 +7,7 @@ const logger = require("../logger");
 
 const router = Router();
 
-router.post("/category", roleMiddleware(["admin"]), async (req, res) => {
+router.post("/", roleMiddleware(["admin"]), async (req, res) => {
   const { name } = req.body;
   try {
     const bazaCategory = await Category.findOne({ where: { name: name } });
@@ -24,7 +24,7 @@ router.post("/category", roleMiddleware(["admin"]), async (req, res) => {
   }
 });
 
-router.get("/categories", authMiddleware, async (req, res) => {
+router.get("/all", authMiddleware, async (req, res) => {
   try {
     let { limit, offset } = req.query;
     limit = parseInt(limit) || 10;
@@ -42,7 +42,7 @@ router.get("/categories", authMiddleware, async (req, res) => {
   }
 });
 
-router.patch("/category/:id", roleMiddleware(["admin"]), async (req, res) => {
+router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
   try {
@@ -60,7 +60,7 @@ router.patch("/category/:id", roleMiddleware(["admin"]), async (req, res) => {
   }
 });
 
-router.delete("/category/:id", roleMiddleware(["admin"]), async (req, res) => {
+router.delete("/:id", roleMiddleware(["admin"]), async (req, res) => {
   const { id } = req.params;
   try {
     const bazaCategory = await Category.findByPk(id);

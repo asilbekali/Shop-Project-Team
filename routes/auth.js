@@ -11,7 +11,11 @@ const { sendSMS } = require("../config/eskiz");
 const router = require("express").Router();
 
 function genToken(user) {
-  const token = jwt.sign({ id: user.id, role: user.role, status: user.status}, "apex1", { expiresIn: "15m" });
+  const token = jwt.sign(
+    { id: user.id, role: user.role, status: user.status },
+    "apex1",
+    { expiresIn: "15m" }
+  );
   return token;
 }
 
@@ -69,7 +73,7 @@ router.post("/verify", async (req, res) => {
   }
 });
 
-router.post("/send-otp", async (req, res) => {
+router.post("/resend-otp", async (req, res) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ where: { email } });
