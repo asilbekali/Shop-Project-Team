@@ -1,47 +1,135 @@
-const { Comment } = require("../associations");
-const authMiddleware = require("../middlewares/authMiddleware");
-const commentValidator = require("../validators/comment.validator");
-
-const router = require("express").Router();
-
 /**
  * @swagger
  * tags:
  *   name: Comments
- *   description: Foydalanuvchi sharhlarini boshqarish
+ *   description: API for managing product comments
  */
 
 /**
  * @swagger
  * /comments/product/{id}:
  *   get:
- *     summary: Mahsulot sharhlarini olish
+ *     summary: Get all comments for a specific product
  *     tags: [Comments]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: Mahsulot ID-si
+ *         description: Product ID
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *         description: Nechta sharh olish kerak
+ *         description: Number of comments to retrieve
  *       - in: query
  *         name: offset
  *         schema:
  *           type: integer
- *         description: Nechta sharhni o'tkazib yuborish kerak
+ *         description: Page number for pagination
  *     responses:
  *       200:
- *         description: Sharhlar ro‘yxati
+ *         description: List of comments
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Comment'
  *       500:
- *         description: Sharhlarni olishda xatolik
+ *         description: Error to get comments of product
  */
+
+/**
+ * @swagger
+ * /comments:
+ *   post:
+ *     summary: Create a new comment
+ *     tags: [Comments]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Comment'
+ *     responses:
+ *       201:
+ *         description: Comment created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Comment'
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Error to post comment
+ */
+
+/**
+ * @swagger
+ * /comments/{id}:
+ *   patch:
+ *     summary: Update an existing comment
+ *     tags: [Comments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Comment ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Comment'
+ *     responses:
+ *       200:
+ *         description: Comment updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Comment'
+ *       400:
+ *         description: Validation error or unauthorized action
+ *       404:
+ *         description: Comment not found
+ *       500:
+ *         description: Error to patch comment
+ */
+
+/**
+ * @swagger
+ * /comments/{id}:
+ *   delete:
+ *     summary: Delete a comment
+ *     tags: [Comments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Comment ID
+ *     responses:
+ *       200:
+ *         description: Comment successfully deleted
+ *       400:
+ *         description: Unauthorized action
+ *       404:
+ *         description: Comment not found
+ *       500:
+ *         description: Error to delete comment
+ */
+const { Comment } = require("../associations");
+const authMiddleware = require("../middlewares/authMiddleware");
+const commentValidator = require("../validators/comment.validator");
+
+const router = require("express").Router();
+
+
 router.get("/product/:id", authMiddleware, async (req, res) => {
   try {
     let { limit, offset } = req.query;
@@ -59,38 +147,7 @@ router.get("/product/:id", authMiddleware, async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /comments:
- *   post:
- *     summary: Yangi sharh qo‘shish
- *     tags: [Comments]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               product_id:
- *                 type: integer
- *                 example: 1
- *               user_id:
- *                 type: integer
- *                 example: 2
- *               content:
- *                 type: string
- *                 example: "Juda yaxshi mahsulot!"
- *     responses:
- *       201:
- *         description: Sharh muvaffaqiyatli qo‘shildi
- *       400:
- *         description: Validation xatosi
- *       500:
- *         description: Sharh qo‘shishda xatolik
- */
+
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const { error } = commentValidator.validate(req.body);
@@ -104,41 +161,7 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /comments/{id}:
- *   patch:
- *     summary: Foydalanuvchi sharhini yangilash
- *     tags: [Comments]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: Sharh ID-si
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               content:
- *                 type: string
- *                 example: "Yangilangan sharh!"
- *     responses:
- *       200:
- *         description: Sharh muvaffaqiyatli yangilandi
- *       400:
- *         description: Sharh foydalanuvchiga tegishli emas
- *       404:
- *         description: Sharh topilmadi
- *       500:
- *         description: Sharh yangilashda xatolik
- */
+
 router.patch("/:id", authMiddleware, async (req, res) => {
   try {
     const one = await Comment.findByPk(req.params.id);
@@ -156,31 +179,7 @@ router.patch("/:id", authMiddleware, async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /comments/{id}:
- *   delete:
- *     summary: Foydalanuvchi sharhini o‘chirish
- *     tags: [Comments]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: O‘chiriladigan sharhning ID-si
- *     responses:
- *       200:
- *         description: Sharh muvaffaqiyatli o‘chirildi
- *       400:
- *         description: Sharh foydalanuvchiga tegishli emas
- *       404:
- *         description: Sharh topilmadi
- *       500:
- *         description: Sharh o‘chirishda xatolik
- */
+
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     const one = await Comment.findByPk(req.params.id);

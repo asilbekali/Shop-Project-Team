@@ -1,3 +1,149 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Orders
+ *   description: API endpoints for managing orders
+ */
+
+/**
+ * @swagger
+ * /my-orders:
+ *   get:
+ *     summary: Get all orders of the authenticated user
+ *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of user's orders
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   user_id:
+ *                     type: integer
+ *                   OrderItems:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: integer
+ *                         product_id:
+ *                           type: integer
+ *                         count:
+ *                           type: integer
+ *                         Product:
+ *                           type: object
+ *                           properties:
+ *                             id:
+ *                               type: integer
+ *                             name:
+ *                               type: string
+ *                             price:
+ *                               type: number
+ *                             img:
+ *                               type: string
+ *       404:
+ *         description: No orders found
+ *       500:
+ *         description: Error fetching orders
+ */
+
+/**
+ * @swagger
+ * /:
+ *   post:
+ *     summary: Create a new order
+ *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               product_id:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *               count:
+ *                 type: integer
+ *             required:
+ *               - product_id
+ *               - count
+ *     responses:
+ *       201:
+ *         description: Order created successfully
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Error creating order
+ */
+
+/**
+ * @swagger
+ * /{id}:
+ *   patch:
+ *     summary: Update an order by ID (Admin only)
+ *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Order ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Order updated successfully
+ *       404:
+ *         description: Order not found
+ *       500:
+ *         description: Error updating order
+ */
+
+/**
+ * @swagger
+ * /{id}:
+ *   delete:
+ *     summary: Delete an order by ID (Admin only)
+ *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Order ID
+ *     responses:
+ *       200:
+ *         description: Order deleted successfully
+ *       404:
+ *         description: Order not found
+ *       500:
+ *         description: Error deleting order
+ */
 const router = require("express").Router();
 const authMiddleware = require("../middlewares/authMiddleware");
 const roleMiddleware = require("../middlewares/roleMiddleware");
@@ -5,29 +151,7 @@ const { Order, OrderItem, Product } = require("../associations");
 const logger = require("../logger");
 const orderValidator = require("../validators/order.validator");
 
-/**
- * @swagger
- * tags:
- *   name: Orders
- *   description: Buyurtmalarni boshqarish
- */
 
-/**
- * @swagger
- * /orders/my-orders:
- *   get:
- *     summary: Foydalanuvchining barcha buyurtmalarini olish
- *     tags: [Orders]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Buyurtmalar ro‘yxati
- *       404:
- *         description: Foydalanuvchi buyurtmalari mavjud emas
- *       500:
- *         description: Buyurtmalarni olishda xatolik
- */
 router.get("/my-orders", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -57,37 +181,7 @@ router.get("/my-orders", authMiddleware, async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /orders:
- *   post:
- *     summary: Yangi buyurtma yaratish
- *     tags: [Orders]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               product_id:
- *                 type: array
- *                 items:
- *                   type: integer
- *                 example: [1, 2, 3]
- *               count:
- *                 type: integer
- *                 example: 2
- *     responses:
- *       201:
- *         description: Buyurtma muvaffaqiyatli yaratildi
- *       400:
- *         description: Yaroqsiz ma’lumot
- *       500:
- *         description: Buyurtma yaratishda xatolik
- */
+
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const { error } = orderValidator.validate(req.body);
@@ -109,39 +203,7 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /orders/{id}:
- *   patch:
- *     summary: Buyurtmani yangilash (faqat admin)
- *     tags: [Orders]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: Yangilanishi kerak bo'lgan buyurtma ID-si
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               status:
- *                 type: string
- *                 example: "Delivered"
- *     responses:
- *       200:
- *         description: Buyurtma muvaffaqiyatli yangilandi
- *       404:
- *         description: Buyurtma topilmadi
- *       500:
- *         description: Buyurtmani yangilashda xatolik
- */
+
 router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
   try {
     const one = await Order.findByPk(req.params.id);
@@ -157,29 +219,6 @@ router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /orders/{id}:
- *   delete:
- *     summary: Buyurtmani o‘chirish (faqat admin)
- *     tags: [Orders]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: O‘chirilishi kerak bo'lgan buyurtma ID-si
- *     responses:
- *       200:
- *         description: Buyurtma muvaffaqiyatli o‘chirildi
- *       404:
- *         description: Buyurtma topilmadi
- *       500:
- *         description: Buyurtmani o‘chirishda xatolik
- */
 router.delete("/:id", roleMiddleware(["admin"]), async (req, res) => {
   try {
     const one = await Order.findByPk(req.params.id);

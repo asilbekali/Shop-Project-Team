@@ -1,18 +1,22 @@
-const router = require("express").Router();
-const logger = require("../logger");
-const roleMiddleware = require("../middlewares/roleMiddleware");
-const bcrypt = require("bcrypt");
-const userValidator = require("../validators/user.validator");
-const { Region, User } = require("../associations");
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: User management and administration
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
 
 /**
  * @swagger
  * /users/all:
  *   get:
- *     summary: Get all users
- *     description: Retrieve a paginated list of all users. Only accessible by admins.
- *     tags:
- *       - Users
+ *     summary: Retrieve all users
+ *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -20,23 +24,165 @@ const { Region, User } = require("../associations");
  *         name: limit
  *         schema:
  *           type: integer
- *         description: Number of results per page (default is 10)
+ *           default: 10
+ *         description: Number of users to retrieve
  *       - in: query
  *         name: offset
  *         schema:
  *           type: integer
- *         description: Page offset
+ *           default: 1
+ *         description: Number of users to skip
  *     responses:
  *       200:
  *         description: List of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
  *       500:
- *         description: Server error
+ *         description: Internal server error
  */
+
+/**
+ * @swagger
+ * /users/byregion/{id}:
+ *   get:
+ *     summary: Retrieve users by region
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Region ID
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of users to retrieve
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Number of users to skip
+ *     responses:
+ *       200:
+ *         description: List of users in the region
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ *       404:
+ *         description: Users not found
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /users:
+ *   post:
+ *     summary: Create a new user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserInput'
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   patch:
+ *     summary: Update a user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserUpdate'
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   delete:
+ *     summary: Delete a user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+const router = require("express").Router();
+const logger = require("../logger");
+const roleMiddleware = require("../middlewares/roleMiddleware");
+const bcrypt = require("bcrypt");
+const userValidator = require("../validators/user.validator");
+const { Region, User } = require("../associations");
+
 router.get("/all", roleMiddleware(["admin"]), async (req, res) => {
   try {
     let { limit, offset } = req.query;
     limit = parseInt(limit) || 10;
-    offset = (parseInt(offset) - 1) * limit || 0;
+    offset = (parseInt(offset) - 1) * limit || 1;
 
     const all = await User.findAll({
       include: { model: Region },
@@ -53,41 +199,6 @@ router.get("/all", roleMiddleware(["admin"]), async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /users/byregion/{id}:
- *   get:
- *     summary: Get users by region
- *     description: Retrieve users filtered by region ID. Only accessible by admins.
- *     tags:
- *       - Users
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: Region ID
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         description: Number of results per page (default is 10)
- *       - in: query
- *         name: offset
- *         schema:
- *           type: integer
- *         description: Page offset
- *     responses:
- *       200:
- *         description: List of users in the region
- *       404:
- *         description: Users not found
- *       500:
- *         description: Server error
- */
 router.get("/byregion/:id", roleMiddleware(["admin"]), async (req, res) => {
   try {
     const { limit, offset } = req.query;
@@ -114,43 +225,6 @@ router.get("/byregion/:id", roleMiddleware(["admin"]), async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /users:
- *   post:
- *     summary: Create a new user
- *     description: Adds a new user to the database. Only admins can perform this action.
- *     tags:
- *       - Users
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *                 example: "johndoe"
- *               password:
- *                 type: string
- *                 example: "password123"
- *               email:
- *                 type: string
- *                 example: "john@example.com"
- *               region_id:
- *                 type: integer
- *                 example: 1
- *     responses:
- *       201:
- *         description: Successfully created a new user
- *       400:
- *         description: Validation error
- *       500:
- *         description: Server error
- */
 router.post("/", roleMiddleware(["admin"]), async (req, res) => {
   try {
     const { error } = userValidator.validate(req.body);
@@ -175,43 +249,6 @@ router.post("/", roleMiddleware(["admin"]), async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /users/{id}:
- *   patch:
- *     summary: Update a user by ID
- *     description: Updates an existing user by ID. Only admins can perform this action.
- *     tags:
- *       - Users
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: User ID
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *                 example: "john_updated"
- *               email:
- *                 type: string
- *                 example: "john.updated@example.com"
- *     responses:
- *       200:
- *         description: Successfully updated user
- *       404:
- *         description: User not found
- *       500:
- *         description: Server error
- */
 router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id);
@@ -229,31 +266,6 @@ router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /users/{id}:
- *   delete:
- *     summary: Delete a user by ID
- *     description: Removes a user from the database. Only admins can perform this action.
- *     tags:
- *       - Users
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: User ID
- *     responses:
- *       200:
- *         description: Successfully deleted user
- *       404:
- *         description: User not found
- *       500:
- *         description: Server error
- */
 router.delete("/:id", roleMiddleware(["admin"]), async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id);

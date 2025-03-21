@@ -1,24 +1,16 @@
-const { Category } = require("../associations");
-const authMiddleware = require("../middlewares/authMiddleware");
-const roleMiddleware = require("../middlewares/roleMiddleware");
-const { Router } = require("express");
-const logger = require("../logger");
-
-const router = Router();
-
 /**
  * @swagger
  * tags:
- *   name: Category
- *   description: Kategoriya boshqarish API
+ *   name: Categories
+ *   description: API for managing categories
  */
 
 /**
  * @swagger
  * /categories:
  *   post:
- *     summary: Yangi kategoriya yaratish
- *     tags: [Category]
+ *     summary: Create a new category
+ *     tags: [Categories]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -30,15 +22,122 @@ const router = Router();
  *             properties:
  *               name:
  *                 type: string
- *                 example: "Fast Food"
+ *                 description: The name of the category
+ *                 example: Electronics
  *     responses:
  *       201:
- *         description: Kategoriya muvaffaqiyatli yaratildi
+ *         description: Category created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Category'
  *       409:
- *         description: Ushbu kategoriya allaqachon mavjud
+ *         description: This category already exists
  *       500:
- *         description: Kategoriya yaratishda xatolik yuz berdi
+ *         description: Error in creating category
  */
+
+/**
+ * @swagger
+ * /categories/all:
+ *   get:
+ *     summary: Get all categories with pagination
+ *     tags: [Categories]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of categories to return
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *         description: Page number to fetch
+ *     responses:
+ *       200:
+ *         description: List of categories
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Category'
+ *       500:
+ *         description: Error in fetching categories
+ */
+
+/**
+ * @swagger
+ * /categories/{id}:
+ *   patch:
+ *     summary: Update a category by ID
+ *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the category to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The new name of the category
+ *                 example: Home Appliances
+ *     responses:
+ *       200:
+ *         description: Category updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Category'
+ *       204:
+ *         description: Category not found
+ *       500:
+ *         description: Error in updating category
+ */
+
+/**
+ * @swagger
+ * /categories/{id}:
+ *   delete:
+ *     summary: Delete a category by ID
+ *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the category to delete
+ *     responses:
+ *       200:
+ *         description: Category successfully deleted
+ *       204:
+ *         description: Category not found
+ *       500:
+ *         description: Error in deleting category
+ */
+const { Category } = require("../associations");
+const authMiddleware = require("../middlewares/authMiddleware");
+const roleMiddleware = require("../middlewares/roleMiddleware");
+const { Router } = require("express");
+const logger = require("../logger");
+
+const router = Router();
+
+
 router.post("/", roleMiddleware(["admin"]), async (req, res) => {
   const { name } = req.body;
   try {
@@ -56,29 +155,6 @@ router.post("/", roleMiddleware(["admin"]), async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /categories/all:
- *   get:
- *     summary: Barcha kategoriyalarni olish
- *     tags: [Category]
- *     parameters:
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         description: Nechta element olish kerakligi
- *       - in: query
- *         name: offset
- *         schema:
- *           type: integer
- *         description: Nechta elementdan keyin olish kerakligi
- *     responses:
- *       200:
- *         description: Kategoriyalar ro‘yxati
- *       500:
- *         description: Kategoriyalarni olishda xatolik yuz berdi
- */
 router.get("/all", async (req, res) => {
   try {
     let { limit, offset } = req.query;
@@ -94,38 +170,6 @@ router.get("/all", async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /categories/{id}:
- *   patch:
- *     summary: Kategoriyani yangilash
- *     tags: [Category]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: Kategoriyaning ID-si
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *     responses:
- *       200:
- *         description: Kategoriya muvaffaqiyatli yangilandi
- *       204:
- *         description: Kategoriya topilmadi
- *       500:
- *         description: Yangilash jarayonida xatolik yuz berdi
- */
 router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
@@ -144,29 +188,6 @@ router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /categories/{id}:
- *   delete:
- *     summary: Kategoriyani o‘chirish
- *     tags: [Category]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: O‘chiriladigan kategoriyaning ID-si
- *     responses:
- *       200:
- *         description: Kategoriya muvaffaqiyatli o‘chirildi
- *       204:
- *         description: Kategoriya topilmadi
- *       500:
- *         description: O‘chirish jarayonida xatolik yuz berdi
- */
 router.delete("/:id", roleMiddleware(["admin"]), async (req, res) => {
   const { id } = req.params;
   try {
