@@ -1,20 +1,16 @@
-const { Region, User } = require("../associations");
-const { Router } = require("express");
-const { regionVali } = require("../validators/region.validation");
-const logger = require("../logger");
-const roleMiddleware = require("../middlewares/roleMiddleware");
-const authMiddleware = require("../middlewares/authMiddleware");
-
-const router = Router();
+/**
+ * @swagger
+ * tags:
+ *   name: Regions
+ *   description: API endpoints for managing regions
+ */
 
 /**
  * @swagger
  * /regions:
  *   post:
  *     summary: Create a new region
- *     description: Adds a new region to the database. Only unique region names are allowed.
- *     tags:
- *       - Regions
+ *     tags: [Regions]
  *     requestBody:
  *       required: true
  *       content:
@@ -24,17 +20,156 @@ const router = Router();
  *             properties:
  *               name:
  *                 type: string
- *                 example: "Tashkent"
+ *                 example: "North Region"
  *     responses:
  *       201:
- *         description: Successfully created a new region
+ *         description: Region created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
  *       400:
  *         description: Validation error
  *       409:
  *         description: Region must be unique
  *       500:
- *         description: Server error
+ *         description: Error in creating region
  */
+
+/**
+ * @swagger
+ * /regions/all:
+ *   get:
+ *     summary: Get all regions
+ *     tags: [Regions]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of regions to return
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *         description: Number of regions to skip
+ *     responses:
+ *       200:
+ *         description: List of regions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *       500:
+ *         description: Error fetching regions
+ */
+
+/**
+ * @swagger
+ * /regions/{id}:
+ *   patch:
+ *     summary: Update a region by ID
+ *     tags: [Regions]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Region ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "Updated Region Name"
+ *     responses:
+ *       200:
+ *         description: Region updated successfully
+ *       404:
+ *         description: Region not found
+ *       500:
+ *         description: Error updating region
+ */
+
+/**
+ * @swagger
+ * /regions/{id}:
+ *   delete:
+ *     summary: Delete a region by ID
+ *     tags: [Regions]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Region ID
+ *     responses:
+ *       200:
+ *         description: Region deleted successfully
+ *       404:
+ *         description: Region not found
+ *       500:
+ *         description: Error deleting region
+ */
+
+/**
+ * @swagger
+ * /regions/{id}:
+ *   get:
+ *     summary: Get a region by ID
+ *     tags: [Regions]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Region ID
+ *     responses:
+ *       200:
+ *         description: Region details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *       404:
+ *         description: Region not found
+ *       500:
+ *         description: Error fetching region
+ */
+const { Region, User } = require("../associations");
+const { Router } = require("express");
+const { regionVali } = require("../validators/region.validation");
+const logger = require("../logger");
+const roleMiddleware = require("../middlewares/roleMiddleware");
+const authMiddleware = require("../middlewares/authMiddleware");
+
+const router = Router();
+
+
 router.post("/", async (req, res) => {
   try {
     const { error, value } = regionVali(req.body);
@@ -57,31 +192,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /regions/all:
- *   get:
- *     summary: Get all regions
- *     description: Retrieves all regions from the database with optional pagination.
- *     tags:
- *       - Regions
- *     parameters:
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         description: Number of results per page (default is 10)
- *       - in: query
- *         name: offset
- *         schema:
- *           type: integer
- *         description: Page offset
- *     responses:
- *       200:
- *         description: Successfully retrieved regions
- *       500:
- *         description: Server error
- */
 router.get("/all", authMiddleware, async (req, res) => {
   try {
     let { limit, offset } = req.query;
@@ -105,35 +215,7 @@ router.get("/all", authMiddleware, async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /regions/{id}:
- *   patch:
- *     summary: Update a region by ID
- *     description: Updates an existing region by ID. Only admins can perform this action.
- *     tags:
- *       - Regions
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: Region ID
- *       - in: body
- *         name: name
- *         required: false
- *         schema:
- *           type: string
- *         description: New region name
- *     responses:
- *       200:
- *         description: Successfully updated region
- *       404:
- *         description: Region not found
- *       500:
- *         description: Server error
- */
+
 router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
@@ -153,29 +235,6 @@ router.patch("/:id", roleMiddleware(["admin"]), async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /regions/{id}:
- *   delete:
- *     summary: Delete a region by ID
- *     description: Removes a region from the database. Only admins can perform this action.
- *     tags:
- *       - Regions
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: Region ID
- *     responses:
- *       200:
- *         description: Successfully deleted region
- *       404:
- *         description: Region not found
- *       500:
- *         description: Server error
- */
 router.delete("/:id", roleMiddleware(["admin"]), async (req, res) => {
   const { id } = req.params;
   try {
@@ -196,29 +255,7 @@ router.delete("/:id", roleMiddleware(["admin"]), async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /regions/{id}:
- *   get:
- *     summary: Get a region by ID
- *     description: Retrieves a specific region by ID.
- *     tags:
- *       - Regions
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: Region ID
- *     responses:
- *       200:
- *         description: Successfully retrieved region
- *       404:
- *         description: Region not found
- *       500:
- *         description: Server error
- */
+
 router.get("/:id", roleMiddleware(["admin"]), async (req, res) => {
   const { id } = req.params;
   try {

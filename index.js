@@ -1,3 +1,29 @@
+/**
+ * @swagger
+ * /uploads:
+ *   post:
+ *     summary: Upload a file
+ *     description: Upload a single file and receive its URL.
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: formData
+ *         name: rasm
+ *         type: file
+ *         required: true
+ *         description: The file to upload.
+ *     responses:
+ *       200:
+ *         description: File uploaded successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 url:
+ *                   type: string
+ *                   description: The URL of the uploaded file.
+ */
 const express = require("express");
 const { connectDb } = require("./config/db");
 const regionRoute = require("./routes/region");
@@ -5,6 +31,7 @@ const authUserRoute = require("./routes/auth");
 const categoryRoute = require("./routes/category");
 const productRoute = require("./routes/product");
 const orderRoute = require("./routes/order");
+const userRoute = require("./routes/users");
 const commentRoute = require("./routes/comment");
 const swaggerDocs = require("./swagger");
 const multer = require("multer");
@@ -19,6 +46,7 @@ app.use("/categories", categoryRoute);
 app.use("/products", productRoute);
 app.use("/order", orderRoute);
 app.use("/comments", commentRoute);
+app.use("/users", userRoute);
 
 
 const storage = multer.diskStorage({

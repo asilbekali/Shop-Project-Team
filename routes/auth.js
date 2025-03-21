@@ -1,3 +1,153 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Auth
+ *   description: Authentication and user management
+ */
+
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               otherFields:
+ *                 type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - phone
+ *     responses:
+ *       200:
+ *         description: OTP sent to the user's email
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /auth/verify:
+ *   post:
+ *     summary: Verify a user's account using OTP
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               otp:
+ *                 type: string
+ *             required:
+ *               - email
+ *               - otp
+ *     responses:
+ *       200:
+ *         description: User verified successfully
+ *       400:
+ *         description: Invalid or expired OTP
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Log in a user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *             required:
+ *               - email
+ *               - password
+ *     responses:
+ *       200:
+ *         description: User logged in successfully
+ *       400:
+ *         description: User not found
+ *       401:
+ *         description: Incorrect password
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /auth/access-token:
+ *   post:
+ *     summary: Generate a new access token using a refresh token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refresh_token:
+ *                 type: string
+ *             required:
+ *               - refresh_token
+ *     responses:
+ *       200:
+ *         description: New access token generated
+ *       401:
+ *         description: Invalid refresh token
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /auth/{id}:
+ *   get:
+ *     summary: Get user information by ID
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: User information retrieved successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
 const userValidator = require("../validators/user.validator");
 const { totp } = require("otplib");
 const bcrypt = require("bcrypt");
@@ -5,6 +155,7 @@ const User = require("../models/users");
 const jwt = require("jsonwebtoken");
 const logger = require("../logger");
 const { sendEmail } = require("../config/sendEmail");
+const authMiddleware = require("../middlewares/authMiddleware");
 const { sendSMS } = require("../config/eskiz");
 
 const router = require("express").Router();
@@ -23,31 +174,6 @@ function genRefreshToken(user) {
   return token;
 }
 
-/**
- * @swagger
- * /auth/register:
- *   post:
- *     summary: Foydalanuvchini ro‘yxatdan o‘tkazish
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *               phone:
- *                 type: string
- *     responses:
- *       200:
- *         description: Otp emailga yuborildi
- *       400:
- *         description: Xatolik bor
- */
 router.post("/register", async (req, res) => {
   try {
     const { error } = userValidator.validate(req.body);
@@ -76,29 +202,6 @@ router.post("/register", async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /auth/verify:
- *   post:
- *     summary: OTP kod bilan foydalanuvchini tasdiqlash
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *               otp:
- *                 type: string
- *     responses:
- *       200:
- *         description: Foydalanuvchi tasdiqlandi
- *       400:
- *         description: Noto‘g‘ri yoki eskirgan kod
- */
 router.post("/verify", async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -120,31 +223,6 @@ router.post("/verify", async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /auth/login:
- *   post:
- *     summary: Foydalanuvchini tizimga kirishi
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Kirish muvaffaqiyatli amalga oshirildi
- *       400:
- *         description: Foydalanuvchi topilmadi
- *       401:
- *         description: Parol noto‘g‘ri
- */
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -170,27 +248,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /auth/access-token:
- *   post:
- *     summary: Yangi access token olish (refresh token orqali)
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               refresh_token:
- *                 type: string
- *     responses:
- *       200:
- *         description: Yangi access token qaytarildi
- *       401:
- *         description: Noto‘g‘ri refresh token
- */
 router.post("/access-token", async (req, res) => {
   try {
     const { refresh_token } = req.body;
@@ -204,6 +261,20 @@ router.post("/access-token", async (req, res) => {
     res.send({ access_token });
   } catch (error) {
     console.log(error);
+  }
+});
+
+router.get("/:id", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+    res.send(user);
+  } catch (error) {
+    logger.error("Error retrieving user information:", error);
+    res.status(500).send({ message: "Internal server error" });
   }
 });
 
